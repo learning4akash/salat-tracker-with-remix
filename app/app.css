@@ -1,0 +1,153 @@
+*{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.hero {
+  width: 100%;
+  min-height: 100vh;
+  background: #FFFFFF;
+  color: black;
+}
+.user-pic {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.topbar-content {
+  width: 100%;
+  padding: 15px 10%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+}
+
+div > h1 > a{
+  text-decoration: none;
+  color: black;
+}
+
+nav {
+  width: 100%;
+  padding: 4px 10%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+}
+
+nav ul li {
+  display: inline-block;
+  list-style: none;
+  margin: 10px 20px;
+}
+
+nav ul li a {
+  text-decoration: none;
+  color: black;
+}
+
+
+.form {
+  width: 500px;
+  margin: auto;
+  margin-top: 80px;
+  background-color: white;
+  padding: 20px;
+  border-radius: 5px;
+  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+
+}
+
+.save {
+  background-color: #2B6CB0;
+  padding: 5px 10px ;
+  color: white;
+  border: none;
+  text-align: center;
+  margin: 2px;
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.cancle {
+  background-color: red;
+  padding: 5px 10px ;
+  color: white;
+  border: none;
+  text-align: center;
+  margin: 2px;
+  border-radius: 2px;
+  margin-left: 15px;
+  cursor: pointer;
+}
+/* style={{  width:"500px", margin: "auto",padding:"20px", marginTop:"20px" }} */
+.setting {
+  width: 700px;
+  margin: auto;
+  margin-top: 40px;
+}
+@media screen and (max-width: 500px) {
+  .setting {
+    width: 350px;
+  }
+}
+
+
+.today {
+  width: 500px;
+  margin: auto;
+  margin-top: 40px;
+}
+
+@media screen and (max-width: 500px) {
+  .today {
+    width: 350px;
+    margin: auto;
+    margin-top: 40px;
+  }
+}
+
+.boxStyle  {
+
+  border-radius: 10px;
+  color: #848393;
+  padding: 10px 10px;
+  list-style: none;
+  margin-top: 5px;
+  box-shadow: 0 0px 20px #EEEEEE;
+  border: 1px solid #d4d4d4;
+  width: 100%;
+}
+.iconStyle {
+  margin-bottom: -14px;
+  cursor: pointer;
+  width: 500px;
+}
+
+
+.boxStyle  {
+  border-radius: 10px;
+  color: #848393;
+  padding: 10px 10px;
+  list-style: none;
+  margin-top: 5px;
+  box-shadow: 0 0px 20px #EEEEEE;
+  border: 1px solid #d4d4d4;
+  width: 100%;
+}
+.iconStyle {
+  margin-bottom: -14px;
+  cursor: pointer;
+  width: 100%;
+}
+.today {
+  width: 500px;
+  margin: auto;
+  margin-top: 40px;
+}
+
+  
