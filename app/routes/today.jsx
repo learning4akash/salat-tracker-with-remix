@@ -1,14 +1,15 @@
 import React from 'react';
-import {  Flex, Checkbox } from 'antd';
+import { 
+   Flex, 
+   Checkbox,
+  } from 'antd';
+import {  LeftOutlined,  RightOutlined } from '@ant-design/icons'
 // import { FaAngleLeft, FaAngleRight } from "react-icons/fa";
 import { useState, useEffect } from 'react';
 import moment from 'moment';
 import { getUserData, getPrayersData, getPersistentPrayerData, storePersistentPrayerData } from '../module/db';
 import { json } from '@remix-run/node'
-// export const loader = async ({ params }) => {
-//   console.log('hello');
-//   console.log(params);
-// }
+
 const justifyOptions = [
   'flex-start',
   'center',
@@ -116,9 +117,11 @@ const App = () => {
     <div className='today'>
         <Flex gap="middle" align="start" vertical>    
                 <Flex className='iconStyle' justify={justify} align={alignItems}>
-                    <p onClick={() => {
+                {/* <p onClick={() => {
                       setDate(moment(date).subtract(1, 'days').format(GLOBAL_DATE_FORMAT))
-                    }} ></p>
+                    }} ><LeftOutlined style={{ width: "30px", height: "30px", marginLeft: "50px", cursor:"pointer"}}/>
+                </p> */}
+                {/* <LeftOutlined /> */}
                     <p style={{ fontWeight: "bold", marginLeft:"120px"}}>{dateLabel}</p>
                     <p onClick={() => {
                       setDate(moment(date).add(1, 'days').format(GLOBAL_DATE_FORMAT))

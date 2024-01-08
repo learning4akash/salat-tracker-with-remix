@@ -10,7 +10,7 @@ import {
 } from '@remix-run/react';
 import { useEffect, useState } from 'react';
 import {getPrayerTimeData, getPrayerTimeCalculationMethods} from '../module/api';
-import { storePrayersData, storeUserData} from '../module/db.js';
+import { getUserData, storePrayersData, storeUserData} from '../module/db.js';
 import { validationAction } from '../utils.js';
 import { z } from "zod";
 const { Option } = Select;
@@ -26,9 +26,14 @@ const tailLayout = {
   },
 };
 
-export const loader = async ({request}) => {
+export const loader = async () => {
   const countries = await Country.getAllCountries();
-  return json({countries , getPrayerCalMethods : await getPrayerTimeCalculationMethods()});
+  return json(
+    {
+      countries ,
+      getPrayerCalMethods : await getPrayerTimeCalculationMethods(),
+    }
+  );
 }
 
 const schema = z.object({
@@ -81,19 +86,24 @@ export default function App() {
   const [messageApi, contextHolder]     = message.useMessage();
   const [disable, setDisable]           = useState(false);
   const [loadings, setLoadings]         = useState([]);
+  // const [loading, setLoading]           = useState(true);
+  const [userInfo, setUserInfo]         = useState({});
   
-   console.log(data);
-
   useEffect(() => {
     if (salatMethods) {
         setSalatMethods(Object.values(getPrayerCalMethods.data));
     }  
     setDisable(false);
   }, []);
-  // const data = fetcher.data
-  // if (data){
-  //   console.log( 'hello ', data);
-  // } 
+     
+  useEffect(() => { 
+      if (data) {
+        storePrayersData(data.prayerTime);
+        storeUserData(data.userData);  
+      }   
+      setUserInfo(getUserData()) 
+  }, [data]);
+  
 
   // useEffect(() => {
   //   if (values) {
@@ -141,26 +151,25 @@ export default function App() {
       cityFetcher.load(`/cities/${isoCode}`)
       setCountry(value);
       setCountryCode(isoCode);
+      setCity([]);
       form.setFieldValue('city', undefined);
     }
 	};
 
   const onFinish =  (values) => {
-    // fetcher.submit(values, { method: "post" });
-    // getPrayerTime.load(`/api/${values}`);
     submit(values, { method: "POST" });
   }
 
   return (
     <>
-
+    {JSON.stringify(userInfo)}
     <Form
       {...layout}
       form={form}
       name="control-hooks"
       method='post'
       onFinish={onFinish}
-      // initialValues={{...userInfo}}
+      initialValues={{userInfo}}
       style={{ maxWidth: 600, margin: "auto", marginTop: "40px" }}
     >
       <Form.Item

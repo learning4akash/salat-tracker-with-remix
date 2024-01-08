@@ -8,14 +8,18 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useLoaderData,
 } from "@remix-run/react";
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {  Flex, Tabs, Menu } from 'antd';
-
+import { getPrayersData, getUserData } from './module/db';
 const boxStyle = {
   width: '100%',
 };
+const disableLink = {
+  pointerEvents : "none"
+}
 
 const justifyOptions = [
   'flex-start',
@@ -28,29 +32,40 @@ const justifyOptions = [
 
 const alignOptions = ['flex-start', 'center', 'flex-end'];
 
-const items = [
-  {
-    label: (<Link to={`/`}>Dashboard</Link>),
-    key: '1',
-  },
-  {
-    label: (<Link to={`today`}>Today</Link>),
-    key: '2',
-  },
-  {
-    label: (<Link to={``}>Setting</Link>),
-    key: '3',
-  },
-]
-
 export const links = () => [
   // ...(cssBundleHref ? [{ rel: "stylesheet", href: appStylesHref }] : []),
   { rel: "stylesheet", href: appStylesHref }
 ];
 
 export default function App() {
-  const [justify, setJustify] = React.useState(justifyOptions[4]);
-  const [alignItems, setAlignItems] = React.useState(alignOptions[0]);
+  const [justify, setJustify]        = React.useState(justifyOptions[4]);
+  const [alignItems, setAlignItems]  = React.useState(alignOptions[0]);
+  const [ userInfo, setUserInfo]     = useState();
+  const [ prayerData, setPrayerData] = useState();
+
+  // useEffect(() => {
+  //   if (!userInfo && !prayerData) {
+  //     console.log("hello");
+  //     setUserInfo(getUserData);
+  //     setPrayerData(getPrayersData);
+  //   }
+  // }, []);
+  const items = [
+    {
+      label: (<Link to={`/`}>Dashboard</Link>),
+      key: '1',
+    },
+    {
+      label: (<Link className = "disableLink" to={`today`}>Today</Link>),
+      key: '2',
+      // disabled: true,
+      // disabled : userInfo && prayerData ? false : true
+    },
+    {
+      label: (<Link to={``}>Setting</Link>),
+      key: '3',
+    },
+  ]
   return (
     <html lang="en">
       <head>

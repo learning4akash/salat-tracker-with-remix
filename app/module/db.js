@@ -12,7 +12,9 @@ export const storeUserData = (userData) => {
 }
 
 export const getUserData = () => {
-    return  JSON.parse(localStorage.getItem("user"));
+     const userData = JSON.parse(localStorage.getItem("user"));
+     if (!userData) throw new Error('User Data Not Found');
+     return userData;
 }
 
 export const storePersistentPrayerData = (data) => {
