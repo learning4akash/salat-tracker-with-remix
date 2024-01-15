@@ -13,7 +13,7 @@ export const storeUserData = (userData) => {
 
 export const getUserData = () => {
      const userData = JSON.parse(localStorage.getItem("user"));
-     if (!userData) throw new Error('User Data Not Found');
+    //  if (!userData) throw new Error('User Data Not Found');
      return userData;
 }
 

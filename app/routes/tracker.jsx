@@ -3,12 +3,17 @@ import {
    Flex, 
    Checkbox,
   } from 'antd';
-import {  LeftOutlined,  RightOutlined } from '@ant-design/icons'
-// import { FaAngleLeft, FaAngleRight } from "react-icons/fa";
+// import {  LeftOutlined,  RightOutlined } from '@ant-design/icons';
+// import { LeftOutlined, RightOutlined } from '@ant-design/icons';
+// import LeftOutlined from '@ant-design/icons/LeftOutlined';
+// import { MessageOutlined } from '@ant-design/icons';
+import { FaAngleLeft, FaAngleRight } from "react-icons/fa";
 import { useState, useEffect } from 'react';
 import moment from 'moment';
 import { getUserData, getPrayersData, getPersistentPrayerData, storePersistentPrayerData } from '../module/db';
 import { json } from '@remix-run/node'
+
+
 
 const justifyOptions = [
   'flex-start',
@@ -20,8 +25,8 @@ const justifyOptions = [
 ];
 
 const alignOptions = ['flex-start', 'center', 'flex-end'];
+const GLOBAL_DATE_FORMAT = 'YYYY-MM-DD';   
 
-const GLOBAL_DATE_FORMAT = 'YYYY-MM-DD';      
 const App = () => {
   const [justify, setJustify] = React.useState(justifyOptions[3]);
   const [alignItems, setAlignItems] = React.useState(alignOptions[1]);
@@ -117,15 +122,16 @@ const App = () => {
     <div className='today'>
         <Flex gap="middle" align="start" vertical>    
                 <Flex className='iconStyle' justify={justify} align={alignItems}>
-                {/* <p onClick={() => {
+                <p onClick={() => {
                       setDate(moment(date).subtract(1, 'days').format(GLOBAL_DATE_FORMAT))
-                    }} ><LeftOutlined style={{ width: "30px", height: "30px", marginLeft: "50px", cursor:"pointer"}}/>
-                </p> */}
-                {/* <LeftOutlined /> */}
+                    }} ><FaAngleLeft style={{ width: "30px", height: "30px", marginLeft: "50px", cursor:"pointer"}}/>
+                </p>
                     <p style={{ fontWeight: "bold", marginLeft:"120px"}}>{dateLabel}</p>
                     <p onClick={() => {
                       setDate(moment(date).add(1, 'days').format(GLOBAL_DATE_FORMAT))
-                    }}></p>
+                    }}>
+                      <FaAngleRight style={{ width: "30px", height: "30px", marginLeft: "50px", cursor:"pointer"}}/>
+                </p>
                 </Flex>
               {timings?.map((timing, index) => (
                 <Flex key={timing.id}  className='boxStyle' justify={justify} align={alignItems}>

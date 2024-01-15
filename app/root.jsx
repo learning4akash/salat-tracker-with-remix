@@ -40,29 +40,30 @@ export const links = () => [
 export default function App() {
   const [justify, setJustify]        = React.useState(justifyOptions[4]);
   const [alignItems, setAlignItems]  = React.useState(alignOptions[0]);
-  const [ userInfo, setUserInfo]     = useState();
-  const [ prayerData, setPrayerData] = useState();
+  const [ userInfo, setUserInfo]     = useState({});
+  const [ prayerData, setPrayerData] = useState({});
+  const [loading, setLoading]        = useState(true);
 
-  // useEffect(() => {
-  //   if (!userInfo && !prayerData) {
-  //     console.log("hello");
-  //     setUserInfo(getUserData);
-  //     setPrayerData(getPrayersData);
-  //   }
-  // }, []);
+
+  useEffect(() => {    
+    if (getUserData && getPrayersData) {
+      setUserInfo(getUserData);
+      setPrayerData(getPrayersData);
+    }
+  }, []);
   const items = [
     {
       label: (<Link to={`/`}>Dashboard</Link>),
       key: '1',
     },
     {
-      label: (<Link className = "disableLink" to={`today`}>Today</Link>),
+      label: (<Link className = "disableLink" to={`/tracker`}>Today</Link>),
       key: '2',
       // disabled: true,
-      // disabled : userInfo && prayerData ? false : true
+      disabled : userInfo && prayerData ? false : true
     },
     {
-      label: (<Link to={``}>Setting</Link>),
+      label: (<Link to={`/setting`}>Setting</Link>),
       key: '3',
     },
   ]
@@ -86,7 +87,6 @@ export default function App() {
           </Flex>
         </Flex>
         <hr />
-        
         <Menu style={{paddingLeft: "500px"}}  mode='horizontal'  items={items}   />
       </div>
         <Outlet />
