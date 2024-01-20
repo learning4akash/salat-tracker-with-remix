@@ -1,19 +1,32 @@
 import React from 'react';
+import { redirect } from '@remix-run/node';
 import { 
    Flex, 
    Checkbox,
   } from 'antd';
-// import {  LeftOutlined,  RightOutlined } from '@ant-design/icons';
-// import { LeftOutlined, RightOutlined } from '@ant-design/icons';
-// import LeftOutlined from '@ant-design/icons/LeftOutlined';
-// import { MessageOutlined } from '@ant-design/icons';
 import { FaAngleLeft, FaAngleRight } from "react-icons/fa";
 import { useState, useEffect } from 'react';
 import moment from 'moment';
-import { getUserData, getPrayersData, getPersistentPrayerData, storePersistentPrayerData } from '../module/db';
-import { json } from '@remix-run/node'
+import { getPersistentPrayerData, storePersistentPrayerData, getPrayersData, persistentPrayerData } from '../module/db.js';
+import { json } from '@remix-run/node';
+import { useLoaderData, useSubmit, useFetcher } from '@remix-run/react';
 
+export const loader = async ({ request }) => {
+  const getCookie  = request.headers.get('Cookie');
+  const prayerData =  getPrayersData();
+  const getPersistentPrayer = getPersistentPrayerData();
+  // const storePersistentData = getPersistentPrayerData();
+  if (!getCookie) {
+    return redirect("/setting");
+  } 
+  return json({prayerData, getPersistentPrayer});
+}
 
+export const action = async ({ request }) => {
+  const data = await request.json();
+  persistentPrayerData(data, 'const');
+  return {}
+}
 
 const justifyOptions = [
   'flex-start',
@@ -40,46 +53,47 @@ const App = () => {
   const [data, setData] = useState([]); 
   const [timings, setTimings] = useState([]);
   const [loading, setLoading] = useState(false);
+  const { prayerData, getPersistentPrayer } = useLoaderData();
+  const submit = useSubmit()
   const prepareTimings = (prayerData, persistentData) => {
     const modifiedData = moment(date).format('DD');
     const current      = prayerData[modifiedData - 1];
-
-  const _timings = [];
-  const excludedTimingKeys = ['Sunrise', 'Sunset', 'Imsak', 'Midnight', 'Lastthird', 'Firstthird'];
-  for(var key in current.timings) {
-      const id = _timings.length + 1;
-    if (excludedTimingKeys.indexOf(key) == -1) {
-      _timings.push({
-        id: id,
-        label: key,
-        time: current.timings[key],
-        isCompleted: persistentData?.timings?.find(timing => key === timing.label)?.isCompleted ?? false, 
-      })
+    const _timings = [];
+    const excludedTimingKeys = ['Sunrise', 'Sunset', 'Imsak', 'Midnight', 'Lastthird', 'Firstthird'];
+    for(var key in current.timings) {
+        const id = _timings.length + 1;
+      if (excludedTimingKeys.indexOf(key) == -1) {
+        _timings.push({
+          id: id,
+          label: key,
+          time: current.timings[key],
+          isCompleted: persistentData?.timings?.find(timing => key === timing.label)?.isCompleted ?? false, 
+        })
+      }
     }
-  }
-  setTimings(_timings);
-  setDateLabel(current.date.readable);
+    setTimings(_timings);
+    setDateLabel(current.date.readable);
   }
   useEffect(() => {
     if (!data.length) {
-      const { data: prayerData } = getPrayersData();
-      const persistentData       = getPersistentPrayerData() ?? [];
-      const currentDateIndex     = persistentData?.findIndex(data => date == data?.date);
+       const { data: prayersData } = prayerData;
+      const persistentData         =  getPersistentPrayer ?? [];
+      const currentDateIndex       = persistentData?.findIndex(data => date == data?.date);
       let persistentResult = {};
       if (currentDateIndex > -1) {
         setCurrentDatePersistentIndex(currentDateIndex);
         persistentResult = persistentData[currentDateIndex];
       }
-      setData(prayerData);
-      prepareTimings(prayerData, persistentResult);
+      setData(prayersData);
+      prepareTimings(prayersData, persistentResult);
     }
   }, []);
 
   useEffect(() => {
     if (data.length) {
-      const persistentData = getPersistentPrayerData() ?? [];
+      const persistentData   = getPersistentPrayer ?? [];
       const currentDateIndex = persistentData?.findIndex(data => date == data?.date);
-      let persistentResult = {};
+      let persistentResult   = {};
       if (currentDateIndex > -1) {
         setCurrentDatePersistentIndex(currentDateIndex);
         persistentResult = persistentData[currentDateIndex];
@@ -94,14 +108,15 @@ const App = () => {
     const timing = {...timings[index]};
     timing.isCompleted = !timing.isCompleted;
     timings[index] = timing; 
-    const persistentData = getPersistentPrayerData() ?? [];
+    const persistentData = getPersistentPrayer ?? [];
+    // console.log(persistentData);
     if (currentDataPersistentIndex > -1) {
       const data = persistentData[currentDataPersistentIndex];
-      const prayerIndex = data.timings.findIndex(timing => timing.label == timings[index].label);
+      const prayerIndex = data?.timings?.findIndex(timing => timing.label == timings[index].label);
       if (prayerIndex > -1) {
         data.timings[prayerIndex].isCompleted = timings[index].isCompleted;
       } else {
-        data.timings.push(timings[index]);
+        data?.timings?.push(timings[index]);
       }
       persistentData[currentDataPersistentIndex] = data;
     } else {
@@ -113,11 +128,11 @@ const App = () => {
       });
       setCurrentDatePersistentIndex(persistentData.length - 1);
     }  
-    // localStorage.setItem('persistent_prayer', JSON.stringify(persistentData));
-    storePersistentPrayerData(persistentData);
+    console.log(persistentData);
+    submit(persistentData, { method: "POST", encType: "application/json" });
     setTimings([...timings]);
   }
-//   <FaAngleLeft style={{ width: "30px", height: "30px", marginLeft: "50px", cursor:"pointer"}}/><FaAngleRight style={{ width: "30px", height: "30px", marginLeft:"100px", cursor:"pointer"}} />
+ // <FaAngleLeft style={{ width: "30px", height: "30px", marginLeft: "50px", cursor:"pointer"}}/><FaAngleRight style={{ width: "30px", height: "30px", marginLeft:"100px", cursor:"pointer"}} />
   return (
     <div className='today'>
         <Flex gap="middle" align="start" vertical>    

@@ -1,5 +1,7 @@
 //  import { cssBundleHref } from "@remix-run/css-bundle"; 
 import appStylesHref from "./app.css";
+import { redirect } from "@remix-run/node";
+import { URL } from 'url';
 import {
   Links,
   Link,
@@ -11,9 +13,17 @@ import {
   useLoaderData,
 } from "@remix-run/react";
 
+export async function loader({ request }) {
+  const url = new URL(request.url);
+  const getCookie  = request.headers.get('Cookie');
+  if ((!getCookie) && url.pathname !== '/setting') {
+      return redirect("/setting");
+  }
+  return {}
+}
+
 import React, { useEffect, useState } from 'react';
 import {  Flex, Tabs, Menu } from 'antd';
-import { getPrayersData, getUserData } from './module/db';
 const boxStyle = {
   width: '100%',
 };
@@ -44,13 +54,6 @@ export default function App() {
   const [ prayerData, setPrayerData] = useState({});
   const [loading, setLoading]        = useState(true);
 
-
-  useEffect(() => {    
-    if (getUserData && getPrayersData) {
-      setUserInfo(getUserData);
-      setPrayerData(getPrayersData);
-    }
-  }, []);
   const items = [
     {
       label: (<Link to={`/`}>Dashboard</Link>),
@@ -59,8 +62,6 @@ export default function App() {
     {
       label: (<Link className = "disableLink" to={`/tracker`}>Today</Link>),
       key: '2',
-      // disabled: true,
-      disabled : userInfo && prayerData ? false : true
     },
     {
       label: (<Link to={`/setting`}>Setting</Link>),

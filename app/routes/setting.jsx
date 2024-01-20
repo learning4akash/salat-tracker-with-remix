@@ -1,20 +1,20 @@
 import { json } from '@remix-run/node';
 import { Button, Form, Input, Select, message } from 'antd';
 import {Country} from 'country-state-city';
-import Cookie from "js-cookie";
-import { 
+
+import {
   useLoaderData,
   useSubmit, 
   useFetcher,
   useActionData, 
 } from '@remix-run/react';
 import { useEffect, useState } from 'react';
-import {getPrayerTimeData, getPrayerTimeCalculationMethods} from '../module/api';
-import { getUserData, storePrayersData, storeUserData} from '../module/db.js';
+import { getPrayerTimeCalculationMethods, getPrayerTimeData} from '../module/api';
+import { getUserData, storeUserData, storePrayersData, getPrayersData } from '../module/db.js';
 import { validationAction } from '../utils.js';
-import { set, z } from "zod";
+import {  z } from "zod";
+import { redirect } from '@remix-run/node';
 const { Option } = Select;
-
 const layout = {
   labelCol: { span: 8 },
   wrapperCol: { span: 16 },
@@ -26,21 +26,11 @@ const tailLayout = {
   },
 };
 
-export const loader = async () => {
-  const countries = await Country.getAllCountries();
-  return json(
-    {
-      countries ,
-      getPrayerCalMethods : await getPrayerTimeCalculationMethods(),
-    }
-  );
-}
-
 const schema = z.object({
   name: z.string({
     required_error: "Name name is required",
     invalid_type_error: " Name must be a string",
-  }),
+  }).min(4),
   country: z.string({
     required_error: "Country is required",
     invalid_type_error: " Country must be a string",
@@ -48,38 +38,53 @@ const schema = z.object({
   city: z.string({
     required_error: "City is required",
     invalid_type_error: " City must be a string",
-  }),
+  }).optional(),
   mazhab: z.string({
     required_error: "Mazhab is required",
     invalid_type_error: "Mazhab must be a string",
   }),
-  salat_method: z.number({
+  salat_method: z.string({
     required_error: "Salat Method is required",
-    invalid_type_error: "Method must be a Number",
+    invalid_type_error: "Method must be a string",
   }),
 })
 
-export const action = async( { request }) => {
-    // const { formData, errors } = await validationAction({
-    //   request, 
-    //   schema
-    // })
-    // if (errors) return json({ errors }, { status: 400 });
-    // const { name, country, city, mazhab, salat_method } = formData;
-    const formData = await request.formData();
-    const userData = Object.fromEntries(formData);
-    const prayerTime = await getPrayerTimeData(userData);
-    return json({userData, prayerTime})
+export const loader = async () => {
+  const countries = await Country.getAllCountries();
+  const userData  = getUserData();
+  return json(
+    {
+      userData,
+      countries ,
+      getPrayerCalMethods : await getPrayerTimeCalculationMethods(),
+    }
+  );
+ }
+
+ export const action = async( { request }) => {
+  const { formData, errors } = await validationAction({
+    request, 
+    schema
+  })
+  // console.log('Hello',errors);
+  if (errors) return json({ errors }, { status: 400 });
+  const prayerTimeData = await getPrayerTimeData(formData);
+  if (formData && prayerTimeData ) {
+    storePrayersData(prayerTimeData);
+    storeUserData(formData);
+    return redirect('/tracker',{
+      headers: {
+        "Set-Cookie": 1,
+      },
+    });
+  }
 }
 
 export default function App() {
-  const [form] = Form.useForm();
-  const cityFetcher     = useFetcher({ key: 'fetch-cities'});
-  const formFetcher     = useFetcher('form-fetcher');
-  // const getPrayerTime     = useFetcher({ key: 'fetch-prayerTime'});
-  const submit = useSubmit();
-  const data = useActionData();
-  const {countries, getPrayerCalMethods} = useLoaderData();
+  const data                            = useActionData();
+  const [form]                          = Form.useForm();
+  const cityFetcher                     = useFetcher({ key: 'fetch-cities'});
+  const submit                          = useSubmit();
   const [country, setCountry]           = useState([]);
   const [countryCode, setCountryCode]   = useState();
   const [city, setCity]                 = useState([]);
@@ -89,7 +94,10 @@ export default function App() {
   const [loading, setLoading]           = useState(true);
   const [loadings, setLoadings]         = useState([]);
   const [userInfo, setUserInfo]         = useState({});
- 
+  const actionData                      = useActionData();
+  const {countries, getPrayerCalMethods, userData} = useLoaderData();
+
+  console.log(actionData?.errors);
   useEffect(() => {
     if (salatMethods) {
       setSalatMethods(Object.values(getPrayerCalMethods.data));
@@ -99,11 +107,12 @@ export default function App() {
 
   useEffect(() => {
     if (! Object.keys(userInfo).length) {
-      const userData = getUserData() ?? [];
-      const findCountry = countries.find(country => country.name == userData.country);
-      if (findCountry) {
-        cityFetcher.load(`/cities/${findCountry.isoCode}`);
-        setCountryCode(findCountry.isoCode);
+      if (userData) {
+        const findCountry = countries.find(country => country.name == userData.country);
+        if (findCountry) {
+          cityFetcher.load(`/cities/${findCountry.isoCode}`);
+          setCountryCode(findCountry.isoCode);
+        } 
       }
       setUserInfo(userData);
     }
@@ -111,14 +120,8 @@ export default function App() {
 
   useEffect(() => { 
       setLoading(true);
-      if (data) {
-        storePrayersData(data.prayerTime);
-        storeUserData(data.userData);  
-        Cookie.set('flag', 1);
-      }   
-      setUserInfo(getUserData()) 
       setLoading(false);
-  }, [data]);
+  }, []);
 
   useEffect(() => {
       if (cityFetcher.state === 'idle' && cityFetcher?.data?.length) {
@@ -156,22 +159,20 @@ export default function App() {
 	};
 
   const onFinish =  (values) => {
-    // formFetcher.submit(values, {
-    //   method: "POST",
-    //   action: "/today",
-    // })
-    submit(values, { method: "POST" });
+    console.log(values);
+    submit(values, { method: "POST", encType:"multipart/form-data"});
   }
 
   return (
     <>
+    {contextHolder}
     {!loading && <Form
       {...layout}
       form={form}
       name="control-hooks"
       method='post'
       onFinish={onFinish}
-      initialValues={{...userInfo}}
+      initialValues={userData}
       style={{ maxWidth: 600, margin: "auto", marginTop: "40px" }}
     >
       <Form.Item
@@ -181,7 +182,7 @@ export default function App() {
         rules={[
           {
             message: 'please type your name'
-          },
+          },  
         ]}
       >
         <Input  placeholder="Your Name" />

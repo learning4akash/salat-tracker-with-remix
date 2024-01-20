@@ -1,8 +1,7 @@
 import { redirect } from "@remix-run/node";
-// import { isCookie } from "@remix-run/node";
 export async function loader({ request }) {
-    const coki  = request.headers.get('Cookie');
-    if (coki) {
+    const getCookie  = request.headers.get('Cookie');
+    if (getCookie) {
         return redirect("/tracker");
     }
     return redirect("/setting");
