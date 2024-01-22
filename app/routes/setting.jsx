@@ -30,7 +30,7 @@ const schema = z.object({
   name: z.string({
     required_error: "Name name is required",
     invalid_type_error: " Name must be a string",
-  }).min(4),
+  }).min(2),
   country: z.string({
     required_error: "Country is required",
     invalid_type_error: " Country must be a string",
@@ -43,7 +43,7 @@ const schema = z.object({
     required_error: "Mazhab is required",
     invalid_type_error: "Mazhab must be a string",
   }),
-  salat_method: z.string({
+  salat_method: z.number({
     required_error: "Salat Method is required",
     invalid_type_error: "Method must be a string",
   }),
@@ -65,9 +65,9 @@ export const loader = async () => {
   const { formData, errors } = await validationAction({
     request, 
     schema
-  })
-  // console.log('Hello',errors);
-  if (errors) return json({ errors }, { status: 400 });
+  });
+  console.log({errors});
+  if (errors) return json({ formData, errors });
   const prayerTimeData = await getPrayerTimeData(formData);
   if (formData && prayerTimeData ) {
     storePrayersData(prayerTimeData);
@@ -81,7 +81,6 @@ export const loader = async () => {
 }
 
 export default function App() {
-  const data                            = useActionData();
   const [form]                          = Form.useForm();
   const cityFetcher                     = useFetcher({ key: 'fetch-cities'});
   const submit                          = useSubmit();
@@ -97,7 +96,6 @@ export default function App() {
   const actionData                      = useActionData();
   const {countries, getPrayerCalMethods, userData} = useLoaderData();
 
-  console.log(actionData?.errors);
   useEffect(() => {
     if (salatMethods) {
       setSalatMethods(Object.values(getPrayerCalMethods.data));
@@ -159,8 +157,8 @@ export default function App() {
 	};
 
   const onFinish =  (values) => {
-    console.log(values);
-    submit(values, { method: "POST", encType:"multipart/form-data"});
+    console.log("name", values);
+    submit(values, { method: "POST", encType:"application/json"});
   }
 
   return (
@@ -181,11 +179,11 @@ export default function App() {
         placeholder="Your Name"
         rules={[
           {
-            message: 'please type your name'
           },  
         ]}
       >
         <Input  placeholder="Your Name" />
+        {actionData?.errors?.name && (<p style={{"color":"red"}}>{actionData?.errors?.name}</p>)}
       </Form.Item>
       <Form.Item
           name= "country"
@@ -209,6 +207,7 @@ export default function App() {
                 </Option>))
             } 
           </Select>
+          {actionData?.errors?.country && (<p style={{"color":"red"}}>{actionData?.errors.country}</p>)}
         </Form.Item>
         { city.length ? (<Form.Item
           name="city"
@@ -239,7 +238,6 @@ export default function App() {
           label="Mazhab"
           rules={[
             {
-              message: 'please select your mazhab'
             },
           ]}
         >
@@ -252,11 +250,11 @@ export default function App() {
             <Option value="2">Maliki</Option>
             <Option value="3">Hanbali</Option>
           </Select>
+          {actionData?.errors?.mazhab && (<p style={{"color":"red"}}>{actionData?.errors.mazhab}</p>)}
         </Form.Item>
         <Form.Item
           name= "salat_method"
           label= "Salat Time Calculation Methods"
-          
         >
           <Select
             placeholder="Select Your City Salat Time Calculation Methods"
@@ -269,6 +267,7 @@ export default function App() {
                 </Option>))
             } 
           </Select>
+          {actionData?.errors?.salat_method && (<p style={{"color":"red"}}>{actionData?.errors.salat_method}</p>)}
         </Form.Item>
         <Form.Item {...tailLayout}>
           <Button style={{ marginRight:"20px"}} type="primary" htmlType="submit"  loading={loadings[0]} onClick={() => enterLoading(0)}>

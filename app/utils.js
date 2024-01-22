@@ -1,11 +1,12 @@
 export async function validationAction({request, schema}) {
- const body  = Object.fromEntries(await request.formData());
+ const body  = await request.json();
+ console.log({body});
  try {
    const formData = schema.parse(body);
-   console.log({formData});
+   console.log("validationAction", {formData});
    return { formData, errors: null}
  } catch (error) {
-    console.log({error})
+    console.log("ZodError", {error})
     return {formData: body, errors: error.issues.reduce((acc, curr) => {
       const key = curr.path[0];
       acc[key]  = curr.message;
